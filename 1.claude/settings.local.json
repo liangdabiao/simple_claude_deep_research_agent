@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dir /a C:UsersGZDesktopsimple_deep_research)",
+      "Skill(deep-research)",
+      "WebSearch"
+    ]
+  }
+}
