@@ -1,4 +1,5 @@
 ---
+name: deep-research
 description: "Conduct deep research on any topic using parallel subagents and web tools (web_search, web_fetch, playwright). Use for queries that require comprehensive research from multiple perspectives."
 ---
 
@@ -120,17 +121,33 @@ After subagents complete:
 
 ## Tool Usage Strategy
 
-1. **For most research**: Use `web_search` → `web_fetch` pattern
-   - Search for relevant information
-   - Fetch full content from promising URLs
+**Primary Approach**: Always delegate web research to subagents via Task tool
 
-2. **For dynamic pages**: Use Playwright MCP tools
-   - `mcp__playwright__navigate` to load JavaScript-heavy pages
-   - `mcp__playwright__snapshot` to get rendered content
+**Subagent Research Tools**:
+1. `web_search` → `web_fetch`: For static content (blogs, articles, documentation)
+2. `web_search` → Playwright MCP: For dynamic/modern sites
+   - Use `mcp__playwright__navigate` to load JavaScript-heavy pages
+   - Use `mcp__playwright__snapshot` to get rendered content
+   - **Always prefer Playwright MCP for**:
+     * Single Page Applications (React/Vue/Angular apps)
+     * News sites with dynamic content loading
+     * Social platforms (Twitter/X, LinkedIn, Reddit)
+     * E-commerce sites
+     * Sites with infinite scroll or lazy loading
+     * Pages requiring user interaction
 
-3. **For parallel efficiency**: Always launch multiple subagents simultaneously
-   - Send 3+ Task tool calls in a single message
-   - Wait for all to complete before synthesis
+**When to Use Playwright MCP**:
+Subagents should automatically use Playwright MCP when:
+- `web_fetch` returns incomplete/truncated content
+- Pages show "Enable JavaScript" messages
+- Content is loaded dynamically via APIs
+- Sites use modern JavaScript frameworks
+- Paywalls or login walls might be bypassed by rendering
+
+**Parallel Execution Strategy**:
+- Launch 2-6 subagents SIMULTANEOUSLY in a single message
+- Each subagent works independently on their sub-task
+- Wait for all subagents to complete before synthesis
 
 ## Important Guidelines
 

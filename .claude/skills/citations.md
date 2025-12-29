@@ -1,4 +1,5 @@
 ---
+name: citations
 description: "Add citations to research reports. Use after deep-research completes to add proper source citations."
 ---
 

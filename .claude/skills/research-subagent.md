@@ -1,4 +1,5 @@
 ---
+name: research-subagent
 description: "Internal skill - Research subagent that executes focused research tasks using web tools. Called automatically by the deep-research lead agent."
 ---
 
@@ -46,14 +47,28 @@ Repeat this loop efficiently.
 - Execute **minimum 3 tool calls**, typically 5-10 for most tasks
 - **Hard limit: 20 tool calls maximum** (you will be blocked if exceeded)
 
-**For Dynamic Pages**:
-- If web_fetch doesn't get complete content (JavaScript-heavy pages), use Playwright:
-  - `mcp__playwright__navigate` to load the page
-  - `mcp__playwright__snapshot` to get rendered content
+**Automatic Playwright MCP Fallback**:
+- **IMPORTANT**: After `web_fetch`, check if you got:
+  - Incomplete content (truncated HTML)
+  - JavaScript placeholder text
+  - "Enable JavaScript" messages
+  - Empty or very short content
+  - Login walls or paywalls that might be bypassed by rendering
+- **If any of these occur**, IMMEDIATELY use Playwright MCP:
+  1. `mcp__playwright__navigate` to load the URL (this executes JavaScript)
+  2. `mcp__playwright__snapshot` to get the fully rendered content
+- **Be proactive**: For modern web apps, news sites, social platforms, or e-commerce sites, prefer Playwright MCP from the start
+- **Common Playwright-use cases**:
+  - Single Page Applications (SPAs) like React/Vue apps
+  - Infinite scroll pages
+  - Sites requiring user interaction
+  - Dynamic content loaded via APIs
+  - Pages with heavily JavaScript-dependent UIs
 
 **For Maximum Efficiency**:
 - Use parallel tool calls: run 2+ web_search queries simultaneously
 - Never use the exact same query repeatedly (wastes resources)
+- Prefer Playwright for complex sites, web_fetch for simple blogs/articles
 
 ### 4. Source Quality Evaluation
 
@@ -118,10 +133,18 @@ Return a dense report with specific efficacy rates, side effects, and sources.
 
 **Execution**:
 1. Search for "depression pharmaceutical treatments 2024"
-2. Search for "SSRI efficacy rates"
-3. Fetch full content from promising sources
+2. Search for "SSRI efficacy rates" (in parallel)
+3. Fetch full content from promising medical sources
+   - If content is incomplete or shows "Enable JavaScript", use Playwright MCP:
+     * `mcp__playwright__navigate` to the URL
+     * `mcp__playwright__snapshot` to get rendered content
 4. Search for "depression treatment guidelines 2024"
 5. Synthesize findings into dense report format
+
+**Key Decision Points**:
+- After `web_fetch`, if content < 500 characters or looks truncated → use Playwright MCP
+- For modern medical websites (WebMD, Mayo Clinic, etc.) → consider Playwright MCP first
+- For PDF or academic articles → `web_fetch` is usually sufficient
 
 ---
 
