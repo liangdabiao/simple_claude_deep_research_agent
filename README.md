@@ -1,6 +1,6 @@
 # Deep Research Agent System
 
-A multi-agent research system for conducting comprehensive web-based research using parallel subagents.
+A multi-agent research system for Claude Code that conducts comprehensive web-based research using parallel subagents.
 
 ## Overview
 
@@ -8,39 +8,28 @@ This system implements a hierarchical agent architecture for deep research:
 
 - **Research Lead Agent**: Orchestrates research, plans tasks, delegates to subagents, and synthesizes findings
 - **Research Subagents**: Execute focused research tasks in parallel using web search and fetch
-- **Citations Agent**: Adds accurate citations to research reports (optional)
 
 ## Quick Start
 
-### Using the `/deep-research` Command
+### Using the Deep Research Skill
 
-The simplest way to use this system is through the Claude Code command:
+Invoke the deep research skill directly in Claude Code:
 
 ```
-/deep-research What are the most effective treatments for depression?
+deep-research What are the most effective treatments for depression?
+```
+
+or with @ syntax:
+
+```
+@deep-research Compare AWS, Azure, and Google Cloud by market share
 ```
 
 The system will automatically:
 1. Analyze your query
 2. Determine the optimal research strategy
-3. Deploy parallel subagents to gather information
+3. Deploy parallel subagents to gather information from the web
 4. Synthesize a comprehensive report
-
-### Using the Python API
-
-```python
-import asyncio
-from research_coordinator import ResearchLeadAgent
-
-async def main():
-    agent = ResearchLeadAgent()
-    report = await agent.conduct_research(
-        "What caused the 2008 financial crisis?"
-    )
-    print(report)
-
-asyncio.run(main())
-```
 
 ## Query Types
 
@@ -48,19 +37,19 @@ The system classifies queries into three types:
 
 ### 1. Straightforward Queries
 Simple fact-finding with clear answers.
-- **Example**: "What is the population of Tokyo?"
+- **Example**: `deep-research What is the population of Tokyo?`
 - **Approach**: Single subagent with focused instructions
 - **Duration**: ~1-2 minutes
 
 ### 2. Breadth-First Queries
 Multi-part questions with distinct sub-topics.
-- **Example**: "Compare AWS, Azure, and Google Cloud"
+- **Example**: `deep-research Compare AWS, Azure, and Google Cloud`
 - **Approach**: Multiple subagents researching independent topics
 - **Duration**: ~3-5 minutes
 
 ### 3. Depth-First Queries
 Complex questions requiring multiple perspectives.
-- **Example**: "What are the most effective treatments for depression?"
+- **Example**: `deep-research What are the most effective treatments for depression?`
 - **Approach**: Multiple subagents exploring different viewpoints
 - **Duration**: ~5-10 minutes
 
@@ -69,14 +58,14 @@ Complex questions requiring multiple perspectives.
 ```
 User Query
     ↓
-Research Lead Agent
+Research Lead Agent (deep-research skill)
     ├─ Analyze Query
     ├─ Determine Query Type
     ├─ Create Research Plan
-    ├─ Deploy Subagents (Parallel)
-    │   ├─ Subagent 1 → Web Search → Fetch → Report
-    │   ├─ Subagent 2 → Web Search → Fetch → Report
-    │   └─ Subagent 3 → Web Search → Fetch → Report
+    ├─ Deploy Subagents (Parallel via Task tool)
+    │   ├─ Subagent 1 → Web Search → Web Fetch → Report
+    │   ├─ Subagent 2 → Web Search → Web Fetch → Report
+    │   └─ Subagent 3 → Web Search → Web Fetch → Report
     └─ Synthesize Findings → Final Report
 ```
 
@@ -86,85 +75,118 @@ Research Lead Agent
 simple_deep_research/
 ├── .claude/
 │   ├── skills/
-│   │   ├── deep-research.md          # Main research skill
-│   │   └── research-subagent.md      # Subagent skill
-│   └── commands/
-│       └── deep-research.md          # Command definition
-├── research_coordinator.py           # Main coordinator implementation
-├── example_usage.py                  # Usage examples
+│   │   ├── deep-research.md          # Main research coordination skill
+│   │   └── research-subagent.md      # Subagent research skill
+│   └── settings.local.json           # Claude Code settings
 ├── research_lead_agent.md            # Original lead agent prompt
 ├── research_subagent.md              # Original subagent prompt
 ├── citations_agent.md                # Original citations agent prompt
-└── README.md                         # This file
+├── README.md                         # This file
+└── CLAUDE.md                         # Development guide
 ```
 
 ## Configuration
 
 ### Skill Files
 
-Skills are defined in `.claude/skills/` and contain:
+Skills are defined in `.claude/skills/`:
 
-- `deep-research.md`: Main research coordination skill
-- `research-subagent.md`: Internal subagent for parallel research
+- **`deep-research.md`**: Main research coordination skill
+  - Analyzes queries and determines research strategy
+  - Uses the `Task` tool to launch parallel subagents
+  - Synthesizes findings into final reports
 
-### Command Files
-
-Commands are defined in `.claude/commands/` and provide:
-
-- `deep-research.md`: The `/deep-research` slash command
+- **`research-subagent.md`**: Internal subagent skill
+  - Executes focused research tasks
+  - Uses `web_search` and `web_fetch` tools
+  - Reports condensed findings back to lead agent
 
 ### Settings
 
-Claude Code settings are in `.claude/settings.local.json`.
+Claude Code settings in `.claude/settings.local.json` configure permissions.
 
 ## Examples
 
-Run the example file to see the system in action:
+### Example 1: Straightforward Query
 
-```bash
-python example_usage.py
+```
+deep-research What is the current population of Tokyo?
 ```
 
-## Development
+### Example 2: Breadth-First Query
 
-### Extending the System
+```
+deep-research Compare the top 3 cloud providers (AWS, Azure, GCP) by market share, pricing, and key features
+```
 
-To add new research capabilities:
+### Example 3: Depth-First Query
 
-1. **Add new query types**: Extend the `QueryType` enum in `research_coordinator.py`
-2. **Customize planning logic**: Modify the `_plan_*` methods in `ResearchLeadAgent`
-3. **Add new tools**: Extend the `ResearchSubagent` class with new tool capabilities
+```
+deep-research What caused the 2008 financial crisis?
+```
 
-### Integration with Claude Code
+### Example 4: Complex Research
 
-The skills and commands in `.claude/` are automatically available in Claude Code:
-
-- Use the `deep-research` skill when you need comprehensive research
-- Invoke `/deep-research <query>` as a command
+```
+deep-research What are the most effective treatments for depression, and what does the latest research say about their efficacy?
+```
 
 ## Research Process
 
 ### For Users
 
-1. **Provide a clear question**: The more specific your query, the better the results
-2. **Wait for completion**: Research time varies by complexity
-3. **Review the report**: The system provides comprehensive, sourced answers
+1. **Invoke the skill**: Use `deep-research <your question>` or `@deep-research <your question>`
+2. **Wait for completion**: Research time varies by complexity (1-10 minutes)
+3. **Review the report**: The system provides comprehensive, sourced answers in Markdown
 
-### For Developers
+### How It Works Internally
 
-To understand the internal flow:
+1. **Query Analysis**: The Research Lead Agent breaks down your question
+2. **Type Classification**: Determines if it's depth-first, breadth-first, or straightforward
+3. **Research Planning**: Creates detailed task allocation for subagents
+4. **Parallel Execution**: Launches multiple subagents simultaneously using the `Task` tool
+5. **Synthesis**: Integrates all findings into a comprehensive report
 
-1. `ResearchLeadAgent.analyze_query()` - Understands the question
-2. `ResearchLeadAgent.determine_query_type()` - Classifies the approach
-3. `ResearchLeadAgent.create_research_plan()` - Creates the task list
-4. `ResearchLeadAgent.execute_research()` - Launches subagents in parallel
-5. `ResearchLeadAgent.synthesize_report()` - Creates the final report
+## Development
 
-## Limitations
+### Modifying Research Behavior
 
-- **Tool call limits**: Subagents are limited to 20 tool calls each
-- **Web-only**: Current implementation only uses web search/fetch
-- **No persistent storage**: Research results are not cached between sessions
+**To change research strategy**: Edit `.claude/skills/deep-research.md`
+- Adjust query classification logic
+- Modify subagent deployment rules
+- Change synthesis approach
+
+**To modify subagent behavior**: Edit `.claude/skills/research-subagent.md`
+- Adjust tool usage patterns
+- Modify source quality evaluation
+- Change reporting format
+
+### Skill File Format
+
+Skills use YAML frontmatter for metadata:
+
+```yaml
+---
+description: "Brief description of when to use this skill"
+---
+
+# Skill Name
+
+Detailed instructions for the agent...
+```
+
+### Testing Changes
+
+1. Edit the skill file
+2. Restart Claude Code or reload skills
+3. Test with: `deep-research <test query>`
+
+## Important Notes
+
+- **No Slash Commands**: Use `deep-research <query>` not `/deep-research`
+- **Parallel Execution**: The system automatically deploys multiple subagents for efficiency
+- **Tool Limits**: Subagents are limited to ~20 tool calls each to prevent runaway execution
+- **Web-Only**: Current implementation uses web_search and web_fetch tools
 
 ## Future Enhancements
 
@@ -175,7 +197,6 @@ Possible improvements to the system:
 - [ ] Add automatic citation generation
 - [ ] Support for multi-language queries
 - [ ] Export reports to different formats (PDF, DOCX)
-- [ ] Web UI for research queries
 
 ## License
 
