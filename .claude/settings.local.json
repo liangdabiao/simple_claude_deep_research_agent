@@ -4,9 +4,7 @@
       "Bash(dir /a C:UsersGZDesktopsimple_deep_research)",
       "Skill(deep-research)",
       "WebSearch",
-      "mcp__playwright__browser_navigate",
-      "mcp__playwright__browser_click",
-      "Bash(mkdir -p \"D:/simple_claude_deep_research_agent/cba_scraper\")"
+      "Edit"
     ]
   }
 }

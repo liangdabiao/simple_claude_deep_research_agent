@@ -1,243 +1,355 @@
-# Deep Research Agent System
+# Claude 深度研究系统
 
-A simplified multi-agent research system for Claude Code that conducts comprehensive web-based research using parallel subagents.
+一个为 Claude Code 设计的简化版多智能体研究系统，通过并行子代理执行基于 Web 的综合性研究。
 
-## Overview
+## 概述
 
-This system uses three specialized agent types:
+本系统使用三种专门的代理类型：
 
-- **Research Lead Agent**: Orchestrates research, plans tasks, delegates to subagents, and synthesizes findings
-- **Research Subagents**: Execute focused research tasks in parallel using web tools
-- **Citations Agent**: Adds proper citations to research reports
+- **研究主导代理（Research Lead Agent）**：统筹研究、规划任务、委派给子代理、综合发现
+- **研究子代理（Research Subagents）**：使用 Web 工具并行执行专注的研究任务
+- **引用代理（Citations Agent）**：为研究报告添加适当的引用
 
-## Quick Start
+## 快速开始
 
-### Using the Deep Research Skill
-
-```
-deep-research What are the most effective treatments for depression?
-```
-
-or with @ syntax:
+### 使用深度研究技能
 
 ```
-@deep-research Compare AWS, Azure, and Google Cloud by market share
+deep-research 治疗抑郁症最有效的方法是什么？
 ```
 
-### Adding Citations
-
-After research completes, add citations:
+或使用 @ 语法：
 
 ```
-citations [paste your research report here]
+@deep-research 比较 AWS、Azure 和 Google Cloud 的市场份额
 ```
 
-## Features
+**重要提示**：不要使用 `/deep-research` - 斜杠命令是内置命令，无法自定义。
 
-### ✅ Implemented
+### 添加引用
 
-- **Three query types**: Depth-first, breadth-first, straightforward
-- **Parallel subagent execution**: 2-6 subagents working simultaneously
-- **Web tools integration**: web_search, web_fetch, Playwright MCP
-- **Source quality evaluation**: Critical assessment of sources
-- **Citation generation**: Automatic citation addition
-- **Flexible complexity**: From simple fact-finding to multi-perspective analysis
-
-### 🎯 Design Goals
-
-- **Medium complexity**: Not too simple, not overly complex
-- **Web-focused**: Uses web tools only (no internal tools like GDrive, Gmail)
-- **Practical**: Focuses on what works reliably
-- **Efficient**: Parallel execution, tool call budgets, clear stopping criteria
-
-## Query Types
-
-### 1. Straightforward Queries
-Simple fact-finding with clear answers.
-- **Example**: `deep-research What is the population of Tokyo?`
-- **Approach**: 1 subagent with focused instructions
-- **Duration**: ~1-2 minutes
-
-### 2. Breadth-First Queries
-Multi-part questions with distinct sub-topics.
-- **Example**: `deep-research Compare AWS, Azure, and Google Cloud`
-- **Approach**: 3 subagents researching different aspects
-- **Duration**: ~3-5 minutes
-
-### 3. Depth-First Queries
-Complex questions requiring multiple perspectives.
-- **Example**: `deep-research What are the most effective treatments for depression?`
-- **Approach**: 4 subagents exploring different viewpoints
-- **Duration**: ~5-10 minutes
-
-## Architecture
+研究完成后，添加引用：
 
 ```
-User invokes: deep-research <query>
+citations [粘贴您的研究报告]
+```
+
+## 功能特性
+
+### ✅ 已实现
+
+- **三种查询类型**：深度优先、广度优先、直接查询
+- **并行子代理执行**：2-6 个子代理同时工作
+- **Web 工具集成**：web_search、web_fetch、Playwright MCP
+- **来源质量评估**：对来源的批判性评估
+- **引用生成**：自动添加引用
+- **灵活复杂度**：从简单的事实查找到多视角分析
+
+### 🎯 设计目标
+
+- **中等复杂度**：不太简单，也不过于复杂
+- **专注 Web**：仅使用 Web 工具（无 GDrive、Gmail 等内部工具）
+- **实用导向**：专注于可靠有效的方法
+- **高效执行**：并行执行、工具调用预算、清晰的停止标准
+
+## 查询类型
+
+### 1. 直接查询（Straightforward Queries）
+有明确答案的简单事实查找。
+
+- **示例**：`deep-research 东京的人口是多少？`
+- **方法**：1 个子代理，专注指令
+- **耗时**：约 1-2 分钟
+
+### 2. 广度优先查询（Breadth-First Queries）
+具有不同子主题的多部分问题。
+
+- **示例**：`deep-research 比较 AWS、Azure 和 Google Cloud`
+- **方法**：3 个子代理，研究不同方面
+- **耗时**：约 3-5 分钟
+
+### 3. 深度优先查询（Depth-First Queries）
+需要多视角的复杂问题。
+
+- **示例**：`deep-research 治疗抑郁症最有效的方法是什么？`
+- **方法**：4 个子代理，探索不同观点
+- **耗时**：约 5-10 分钟
+
+## 架构
+
+```
+用户调用: deep-research <查询>
     ↓
-Research Lead Agent
-  ├─ Analyzes query
-  ├─ Determines query type
-  ├─ Creates research plan
-  ├─ Launches 2-6 subagents in parallel (Task tool)
-  │   ├─ Subagent 1 → web_search → web_fetch → Report
-  │   ├─ Subagent 2 → web_search → web_fetch → Report
-  │   └─ Subagent 3 → web_search → Playwright → Report
-  └─ Synthesizes findings → Final Markdown report
+研究主导代理 (Research Lead Agent)
+  ├─ 分析查询
+  ├─ 确定查询类型
+  ├─ 创建研究计划
+  ├─ 并行启动 2-6 个子代理 (Task 工具)
+  │   ├─ 子代理 1 → web_search → web_fetch → 报告
+  │   ├─ 子代理 2 → web_search → web_fetch → 报告
+  │   └─ 子代理 3 → web_search → Playwright → 报告
+  └─ 综合发现 → 最终 Markdown 报告
       ↓
-Citations Agent (optional)
-  └─ Adds citations to report
+引用代理 (Citations Agent，可选)
+  └─ 为报告添加引用
 ```
 
-## Tools Used
+## 使用的工具
 
-| Tool | Purpose | When to Use |
+| 工具 | 用途 | 使用时机 |
 |------|---------|-------------|
-| `web_search` | Search the web | Initial research |
-| `web_fetch` | Get full page content | After web_search, for static pages |
-| `mcp__playwright__navigate` | Load JavaScript pages | Dynamic content |
-| `mcp__playwright__snapshot` | Get rendered content | JavaScript-heavy pages |
-| `Task` | Launch subagents | Parallel research |
+| `web_search` | 搜索 Web | 初始研究 |
+| `web_fetch` | 获取完整页面内容 | web_search 后，用于静态页面 |
+| `mcp__playwright__navigate` | 加载 JavaScript 页面 | 动态内容 |
+| `mcp__playwright__snapshot` | 获取渲染内容 | JavaScript 重型页面 |
+| `Task` | 启动子代理 | 并行研究 |
 
-## File Structure
+## 自动使用 Playwright MCP
+
+系统会**自动检测**并使用 Playwright MCP：
+
+### 检测条件
+当 `web_fetch` 返回以下情况时，自动切换到 Playwright：
+- 内容不完整（截断的 HTML）
+- JavaScript 占位符文本
+- "启用 JavaScript" 消息
+- 空内容或内容过短
+- 登录墙或付费墙
+
+### 优先使用 Playwright 的网站
+- 单页应用（React/Vue/Angular 应用）
+- 动态加载内容的新闻网站
+- 社交平台（Twitter/X、LinkedIn、Reddit）
+- 电商网站
+- 无限滚动或懒加载网站
+- 需要用户交互的页面
+
+## 文件结构
 
 ```
-simple_deep_research/
+simple_claude_deep_research_agent/
 ├── .claude/
 │   └── skills/
-│       ├── deep-research.md       # Lead agent skill
-│       ├── research-subagent.md   # Subagent skill
-│       └── citations.md           # Citations agent skill
-├── research_lead_agent.md         # Original prompt (reference)
-├── research_subagent.md           # Original prompt (reference)
-├── citations_agent.md             # Original prompt (reference)
-├── README.md                      # This file
-└── CLAUDE.md                      # Development guide
+│       ├── deep-research.md       # 主导代理技能
+│       ├── research-subagent.md   # 子代理技能
+│       └── citations.md           # 引用代理技能
+├── research_lead_agent.md         # 原始提示（参考）
+├── research_subagent.md           # 原始提示（参考）
+├── citations_agent.md             # 原始提示（参考）
+├── README.md                      # 本文件（中文版）
+└── README_en.md                   # 英文版文档
 ```
 
-## Examples
+## 使用示例
 
-### Example 1: Simple Query
-
-```
-deep-research What is the current population of Tokyo?
-```
-
-**Expected output**:
-- Single subagent searches for population data
-- Returns current population with source
-- Total time: ~1 minute
-
-### Example 2: Comparison Query
+### 示例 1：简单查询
 
 ```
-deep-research Compare AWS, Azure, and Google Cloud pricing for compute instances
+deep-research 东京当前的人口是多少？
 ```
 
-**Expected output**:
-- 3 subagents, each researching one provider
-- Lead agent synthesizes comparison table
-- Total time: ~3-5 minutes
+**预期输出**：
+- 单个子代理搜索人口数据
+- 返回当前人口及来源
+- 总耗时：约 1 分钟
 
-### Example 3: Deep Analysis
+### 示例 2：比较查询
 
 ```
-deep-research What caused the 2008 financial crisis?
+deep-research 比较 AWS、Azure 和 Google Cloud 的计算实例价格
 ```
 
-**Expected output**:
-- 4 subagents exploring: economic, regulatory, behavioral, historical perspectives
-- Comprehensive multi-perspective analysis
-- Total time: ~5-8 minutes
+**预期输出**：
+- 3 个子代理，各研究一个提供商
+- 主导代理综合比较表格
+- 总耗时：约 3-5 分钟
 
-## Configuration
+### 示例 3：深度分析
 
-### MCP Server Setup (Optional)
+```
+deep-research 2008 年金融危机的原因是什么？
+```
 
-To use Playwright MCP for dynamic pages:
+**预期输出**：
+- 4 个子代理探索：经济、监管、行为、历史视角
+- 综合性多视角分析
+- 总耗时：约 5-8 分钟
 
-1. Install Playwright MCP server (if not already installed)
-2. Add to your Claude Code MCP configuration
-3. Restart Claude Code
+## 配置
 
-The system will automatically use Playwright when needed for JavaScript-heavy pages.
+### MCP 服务器设置（可选）
 
-### Skill Files
+要为动态页面使用 Playwright MCP：
 
-Skills are automatically loaded from `.claude/skills/`:
-- `deep-research.md`: Main research coordination
-- `research-subagent.md`: Subagent research logic
-- `citations.md`: Citation addition
+1. 安装 Playwright MCP 服务器（如未安装）
+2. 添加到您的 Claude Code MCP 配置
+3. 重启 Claude Code
 
-## Development
+系统会在需要时自动为 JavaScript 重型页面使用 Playwright。
 
-### Modifying Behavior
+### 技能文件
 
-**To change research strategy**: Edit `.claude/skills/deep-research.md`
-- Query classification logic
-- Subagent deployment rules
-- Synthesis approach
+技能会从 `.claude/skills/` 自动加载：
+- `deep-research.md`：主要研究协调
+- `research-subagent.md`：子代理研究逻辑
+- `citations.md`：引用添加
 
-**To modify subagent behavior**: Edit `.claude/skills/research-subagent.md`
-- Tool usage patterns
-- Source quality evaluation
-- Report format
+## 开发指南
 
-**To modify citations**: Edit `.claude/skills/citations.md`
-- Citation style
-- When to cite rules
+### 修改行为
 
-### Testing
+**更改研究策略**：编辑 `.claude/skills/deep-research.md`
+- 查询分类逻辑
+- 子代理部署规则
+- 综合方法
 
-1. Edit skill files
-2. Test with: `deep-research <test query>`
-3. Iterate based on results
+**修改子代理行为**：编辑 `.claude/skills/research-subagent.md`
+- 工具使用模式
+- 来源质量评估
+- 报告格式
 
-## Limitations
+**修改引用**：编辑 `.claude/skills/citations.md`
+- 引用样式
+- 引用规则
 
-- **Web-only**: Uses web tools only (no GDrive, Gmail, Slack integration)
-- **Tool call limits**: Subagents limited to 20 tool calls each
-- **No persistent storage**: Research not cached between sessions
-- **Language**: Primarily optimized for English queries
+### 测试
 
-## Future Enhancements
+1. 编辑技能文件
+2. 测试：`deep-research <测试查询>`
+3. 根据结果迭代
 
-Possible improvements:
+## 限制
 
-- [ ] Add more query types (e.g., temporal analysis, trend detection)
-- [ ] Implement result caching
-- [ ] Add export formats (PDF, DOCX)
-- [ ] Multi-language support
-- [ ] Research history tracking
+- **仅限 Web**：仅使用 Web 工具（无 GDrive、Gmail、Slack 集成）
+- **工具调用限制**：每个子代理限制 20 次工具调用
+- **无持久化存储**：研究不在会话间缓存
+- **语言**：主要针对英文查询优化
 
-## Troubleshooting
+## 未来增强
 
-### "Unknown skill" error
+可能的改进方向：
 
-- Ensure skill files are in `.claude/skills/`
-- Check YAML frontmatter is correct
-- Restart Claude Code
+- [ ] 添加更多查询类型（如时间分析、趋势检测）
+- [ ] 实现结果缓存
+- [ ] 添加导出格式（PDF、DOCX）
+- [ ] 多语言支持
+- [ ] 研究历史跟踪
 
-### Subagents not launching
+## 故障排除
 
-- Check Task tool syntax
-- Ensure `general-purpose` subagent_type is used
-- Verify Claude Code has permissions
+### "Unknown skill" 错误
 
-### Poor research quality
+- 确保技能文件在 `.claude/skills/` 中
+- 检查 YAML frontmatter 是否正确
+- 重启 Claude Code
 
-- Try different query wording
-- Check if query type is correctly classified
-- Verify web_search is working
+### 子代理未启动
 
-## Tips for Best Results
+- 检查 Task 工具语法
+- 确保使用 `general-purpose` subagent_type
+- 验证 Claude Code 权限
 
-1. **Be specific**: "What are the pros and cons of React vs Vue?" is better than "Tell me about frontend frameworks"
-2. **Set context**: Include time constraints if relevant (e.g., "as of 2025")
-3. **Use appropriate complexity**: Simple questions don't need multiple subagents
-4. **Add citations**: Use the citations skill after research for authoritative reports
-5. **Iterate**: Refine your query based on initial results
+### 研究质量差
 
-## License
+- 尝试不同的查询措辞
+- 检查查询类型是否正确分类
+- 验证 web_search 是否正常工作
 
-This is a demonstration project for educational purposes.
+### Playwright MCP 未使用
+
+- 检查 Playwright MCP 是否已安装并配置
+- 确认页面确实需要 JavaScript 渲染
+- 查看子代理是否检测到不完整内容
+
+## 获得最佳效果的提示
+
+1. **具体明确**："React 和 Vue 的优缺点是什么？" 比 "告诉我关于前端框架" 更好
+2. **设定上下文**：如相关，包含时间限制（如 "截至 2025 年"）
+3. **使用适当复杂度**：简单问题不需要多个子代理
+4. **添加引用**：研究后使用引用技能以获得权威报告
+5. **迭代优化**：根据初始结果优化查询
+
+## 工作流程
+
+### 典型研究流程
+
+1. **发起查询**：使用 `deep-research <问题>`
+2. **分析规划**：主导代理分析查询类型和复杂度
+3. **并行研究**：2-6 个子代理同时研究不同方面
+4. **综合报告**：主导代理整合所有发现
+5. **添加引用**（可选）：使用 `citations` 添加引用
+
+### 最佳实践
+
+- **从宽泛开始**：先使用广泛的查询，然后根据需要细化
+- **检查来源**：评估信息质量，寻找偏见和推测
+- **验证事实**：对关键事实进行交叉验证
+- **保存结果**：将重要报告保存到文件
+
+## 技术细节
+
+### 查询分类
+
+系统将查询分为三类：
+
+| 类型 | 描述 | 子代理数 | 示例 |
+|------|-------------|-----------|---------|
+| 直接查询 | 简单事实查找 | 1 | "东京人口是多少？" |
+| 广度优先 | 独立子主题 | 3 | "比较 AWS、Azure、GCP" |
+| 深度优先 | 多视角 | 4 | "2008 危机的原因是什么？" |
+
+### 工具调用策略
+
+**静态内容**：`web_search` → `web_fetch`
+- 博客、文章、文档
+- 简单 HTML 网站
+
+**动态内容**：`web_search` → Playwright MCP
+- React/Vue/Angular 应用
+- 动态加载的网站
+- 需要交互的页面
+
+### 子代理约束
+
+- **工具调用预算**：3-15 次调用（取决于复杂度）
+- **硬限制**：最多 20 次工具调用
+- **最小值**：至少 3 次工具调用以进行有意义的研究
+- **并行**：同时使用 2+ 个 web_search 调用
+
+## 设计理念
+
+### 为什么是中等复杂度？
+
+- **不太简单**：保留核心价值（并行研究、综合）
+- **不太复杂**：避免边缘情况，更易维护
+- **实用**：专注于可靠有效的方法
+
+### 为什么只用 Web 工具？
+
+- **通用性**：任何用户无需特殊设置即可使用
+- **可靠性**：web_search 和 web_fetch 稳定可靠
+- **充分性**：覆盖大多数研究需求
+
+### 为什么是三种查询类型？
+
+- **直接查询**：简单问题不需要并行化
+- **广度优先**：独立主题从并行代理中受益
+- **深度优先**：复杂问题需要多视角
+
+## 贡献
+
+欢迎贡献！请随时：
+
+1. 提交问题报告
+2. 建议新功能
+3. 提交改进请求
+
+## 许可证
+
+这是一个用于教育目的的演示项目。
+
+---
+
+**文档版本**：1.0
+**最后更新**：2025-12-29
+**维护者**：Claude Code Community
